@@ -274,8 +274,12 @@ let atomic_types = [Int8, Int16, Int32, Int64, Int128,
     # Temporarily omit 128-bit types on 32bit x86
     # 128-bit atomics do not exist on AArch32.
     # And we don't support them yet on power.
+    # LLVM 3.9 on windows is missing support as well.
+    # This might be fixed by switching to a mingw64 version
+    # that supports libatomic.
     if Sys.ARCH === :i686 || startswith(string(Sys.ARCH), "arm") ||
-       Sys.ARCH === :powerpc64le || Sys.ARCH === :ppc64le
+       Sys.ARCH === :powerpc64le || Sys.ARCH === :ppc64le ||
+       (is_windows() && startswith(Base.libllvm_version, "3.9"))
         filter!(T -> sizeof(T)<=8, atomic_types)
     end
     for T in atomic_types
